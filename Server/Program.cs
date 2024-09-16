@@ -34,7 +34,10 @@ class Program
         {
             Console.WriteLine("Waiting for a connection...");
             using Socket handler = listener.Accept();
-            Console.WriteLine("Client connected!");
+
+            Thread myThread = new Thread(listener.Listen);
+            
+            Console.WriteLine("Clients connected!");
             byte[] receiveBuffer = new byte[1024];
             int bytesCount = handler.Receive(receiveBuffer);
             string receiveMessage = Encoding.UTF8.GetString(receiveBuffer, 0, bytesCount);
@@ -73,10 +76,15 @@ class Program
                 response = $"Length of your message: {receiveMessage.Length}";
                 response = "Непонятный вопрос!";
             }
+
+            response = $"Ответ: {response}";
             byte[] sendBuffer = Encoding.UTF8.GetBytes(response);
             handler.Send(sendBuffer);
             handler.Shutdown(SocketShutdown.Both);
             handler.Close();
+            
+            myThread.Start();
+            
             if (receiveMessage.Contains("Stop")) 
                 break;
         }
